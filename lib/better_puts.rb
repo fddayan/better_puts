@@ -2,14 +2,14 @@ require "better_puts/version"
 require 'rainbow'
 
 module BetterPuts
-  COLORS = [:red,:yellow,:magenta,:cyan,:green]
+  COLORS = [:magenta,:cyan,:green,:yellow,:red]
 
   def self.bp(line)
     file, line_num = caller.first.split(":")
     location = "[#{file}:#{line_num}]"
-    identation = self.indent_char * (self.index+1)
+    identation = self.indent_char * (self.index)
 
-    puts colored(location+identation+line)
+    puts identation + location + colored(line)
 
     if block_given?
       self.index = self.index + 1
@@ -17,9 +17,11 @@ module BetterPuts
       yield
       et = Time.now
       self.index = self.index - 1
-      puts colored(location+identation+ "END (#{et - st} s.)")
+      puts identation + location + colored("END (#{et - st} s.)")
     end
   end
+
+
 
   def self.colored(l)
     Rainbow(l).color(COLORS[self.index])
@@ -39,6 +41,6 @@ module BetterPuts
   end
 
   def self.indent_char
-    @@indent_char ||= "."
+    @@indent_char ||= "\t"
   end
 end
