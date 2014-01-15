@@ -1,9 +1,7 @@
 require File.expand_path('../../lib/better_puts', __FILE__)
 
-# bp "fede" do
-#   bp "dayan"
-# end
-# bp "fede"
-# bp "fede"
+bp "testin something" do
+  bp "this is nested"
+end
 
-bp
+bp # empty should work
