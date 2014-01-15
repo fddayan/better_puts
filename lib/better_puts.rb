@@ -4,43 +4,56 @@ require 'rainbow'
 module BetterPuts
   COLORS = [:magenta,:cyan,:green,:yellow,:red]
 
-  def self.bp(line)
-    file, line_num = caller.first.split(":")
-    location = "[#{file}:#{line_num}]"
-    identation = self.indent_char * (self.index)
+  module Helper
+    def bp(line="",&block)
+      @out ||= Out.new
 
-    puts identation + location + colored(line)
-
-    if block_given?
-      self.index = self.index + 1
-      st = Time.now
-      yield
-      et = Time.now
-      self.index = self.index - 1
-      puts identation + location + colored("END (#{et - st} s.)")
+      @out.out(line,&block)
     end
   end
 
+  class Out
+    def out(line)
+      file, line_num = caller.first.split(":")
+      location = "[#{file}:#{line_num}]"
+      identation = indent_char * (index)
+
+      puts colored(identation + location + line.to_s)
+
+      if block_given?
+        self.index = self.index + 1
+        st = Time.now
+        yield
+        et = Time.now
+        self.index = self.index - 1
+        puts colored(identation + location + "END (#{(et - st)} s.)")
+      end
+    end
+
+    def colored(l)
+      Rainbow(l).color(COLORS[self.index])
+    end
+
+    def index=(i)
+      i =  0 if i > (COLORS.length-1)
+      @@index = i
+    end
+
+    def index
+      @@index ||= 0
+    end
+
+    def indent_char=(chr)
+      @@indent_char = chr
+    end
+
+    def indent_char
+      @@indent_char ||= "\t"
+    end
 
 
-  def self.colored(l)
-    Rainbow(l).color(COLORS[self.index])
   end
 
-  def self.index=(i)
-    i =  0 if i > (COLORS.length-1)
-    @@index = i
-  end
-
-  def self.index
-    @@index ||= 0
-  end
-
-  def self.indent_char=(chr)
-    @@indent_char = chr
-  end
-
-  def self.indent_char
-    @@indent_char ||= "\t"
-  end
 end
+
+include BetterPuts::Helper
