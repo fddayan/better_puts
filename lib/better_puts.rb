@@ -2,58 +2,38 @@ require "better_puts/version"
 require 'rainbow'
 
 module BetterPuts
-  COLORS = [:magenta,:cyan,:green,:yellow,:red]
+
+  def self.config
+    @config ||= {color: :red}
+  end
 
   module Helper
-    def bp(line="",&block)
-      @out ||= Out.new
+    def bp(*values)
+      bp_line
+      values.each do |v|
+        OUT.out(v)
+      end
+      bp_line
+    end
 
-      @out.out(line,&block)
+    def bp_line(ch="-",n=100)
+      OUT.out(ch * n)
+    end
+
+    def bp_wrap
+      bp_line
+      yield
+      bp_line
     end
   end
 
   class Out
     def out(line)
-      file, line_num = caller.first.split(":")
-      location = "[#{file}:#{line_num}]"
-      identation = indent_char * (index)
-
-      puts colored(identation + location + line.to_s)
-
-      if block_given?
-        self.index = self.index + 1
-        st = Time.now
-        yield
-        et = Time.now
-        self.index = self.index - 1
-        puts colored(identation + location + "END (#{(et - st)} s.)")
-      end
+      puts Rainbow(line).color(BetterPuts.config[:color])
     end
-
-    def colored(l)
-      Rainbow(l).color(COLORS[self.index])
-    end
-
-    def index=(i)
-      i =  0 if i > (COLORS.length-1)
-      @@index = i
-    end
-
-    def index
-      @@index ||= 0
-    end
-
-    def indent_char=(chr)
-      @@indent_char = chr
-    end
-
-    def indent_char
-      @@indent_char ||= "\t"
-    end
-
-
   end
 
+  OUT = Out.new
 end
 
 include BetterPuts::Helper
